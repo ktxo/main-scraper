@@ -1,0 +1,19 @@
+
+# Conda configuration
+# conda create  --yes --name dummy python=3.10
+# conda install --yes --name dummy --file requirements.txt
+#
+# VirtualEnv
+# python -m venv venv
+# source venv/bin/activate
+# pip install --upgrade pip
+# pip install -r requirements.txt
+
+
+selenium
+beautifulsoup4
+fake-useragent
+undetected_chromedriver
+
+# For sample.py
+#tabulate

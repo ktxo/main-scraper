@@ -1,0 +1,30 @@
+{
+  "browser": "chrome",
+  "wait": [1, 5],
+  "wait_ec": {"timeout": 30, "poll_frequency": 0.2},
+  "fake_useragent": {"browser": "random"},
+  "chrome": {
+      "executable_path": "/sw/chromedriver/chromedriver",
+      "config": {},
+      "chrome_options": ["--incognito",
+                         "--disable-blink-features=AutomationControlled",
+                         "--user-agent=RANDOM"],
+      "experimental_option": {
+        "prefs": {
+          "download.default_directory":  "/tmp",
+          "download.prompt_for_download": false,
+          "download.directory_upgrade": true
+        }
+      }
+  },
+  "uc": {
+      "config": {
+          "headless": true,
+          "use_subprocess": false,
+          "driver_executable_path": "/sw/chromedriver/undetected_chromedriver"
+      },
+      "chrome_options": ["--incognito",
+                         "--disable-blink-features=AutomationControlled",
+                         "--user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"]
+  }
+}
