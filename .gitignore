@@ -1,0 +1,16 @@
+# Default ignored files
+/shelf/
+/workspace.xml
+**/__pycache__
+**/.pytest_cache
+**/.DS_Store
+**/.idea
+*.pyc
+**/.vscode/
+**/*.log
+**/*egg-info
+**/dist
+**/build
+**POC**
+**/dump
+**poc**
