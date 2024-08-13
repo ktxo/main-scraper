@@ -17,3 +17,7 @@ undetected_chromedriver
 
 # For sample.py
 #tabulate
+
+# For build wheel
+# python setup.py build bdist_wheel
+wheel

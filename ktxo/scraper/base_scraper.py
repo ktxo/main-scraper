@@ -110,7 +110,7 @@ class SeleniumWrapper():
 
         logger.info(f"{self.__class__.__name__}: driver={self.browser}")
 
-    def __build_chrome_options(self) -> Union[list[str],None]:
+    def __build_chrome_options(self) -> webdriver.ChromeOptions:
         # user-agent
         self.options = webdriver.ChromeOptions()
         if self.config.get("chrome_options", []):
@@ -123,6 +123,22 @@ class SeleniumWrapper():
                 #     self.options.add_argument(f"--user-agent={self.ua}")
                 #     continue
                 self.options.add_argument(o)
+        for o, v in self.config.get("experimental_option", {}).items():
+            self.options.add_experimental_option(o, v)
+        return self.options
+
+    def __build_uc_chrome_options(self) -> uc.ChromeOptions:
+        # user-agent
+        self.options = uc.ChromeOptions()
+        if self.config.get("chrome_options", []):
+            for o in self.config.get("chrome_options", []):
+                if o.lower() == "--user-agent=fake":
+                    self.options.add_argument(f"--user-agent={self.ua}")
+                    continue
+                self.options.add_argument(o)
+                if o.startswith("--user-data="):
+                    continue
+                    #self.options.user_data_dir = o[len("--user-data="):]
         for o, v in self.config.get("experimental_option", {}).items():
             self.options.add_experimental_option(o, v)
         return self.options
@@ -146,7 +162,7 @@ class SeleniumWrapper():
 
     def __init_uc(self):
         try:
-            self.options = self.__build_chrome_options()
+            self.options = self.__build_uc_chrome_options()
             self.driver = uc.Chrome(options=self.options, **self.config["config"])
         except WebDriverException as we:
             logger.error(f"Cannot connect to process")
@@ -197,9 +213,18 @@ class SeleniumWrapper():
         else:
             time.sleep(random.randint(*self.wait))
 
-    def go2url(self, url: str, new_tab: bool = False):
+    def go2urls(self, urls:list[str], use_tab=True):
+        for url in urls:
+            if use_tab:
+                self.go2url(url, True, False)
+            else:
+                self.go2url(url, False, True)
+
+    def go2url(self, url: str, new_tab: bool = False, new_window:bool = False):
         if new_tab:
             self.driver.switch_to.new_window('tab')
+        elif new_window:
+            self.driver.switch_to.new_window('window')
         self.driver.get(url)
         self.windows.append([self.driver.current_window_handle, self.driver.current_url])
 
@@ -445,6 +470,16 @@ class SeleniumWrapper():
                 logger.warning(f"wait_func=title_is text='{text}' not found")
                 self.screenshot(f"wait_func=title_is text='{text}' not found")
             return None
+
+    def switch_to_tab(self, w):
+        window = []
+        for w_ in self.windows:
+            if w in w_:
+                window = w_
+                break
+        if window == []:
+            return
+        self.driver.switch_to(window[0])
 
     def switch_to_frame(self, frame=None):
         if frame:
