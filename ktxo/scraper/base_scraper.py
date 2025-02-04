@@ -26,9 +26,11 @@ from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import WebDriverException, TimeoutException
+from selenium.common.exceptions import WebDriverException, TimeoutException, NoSuchElementException
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
+
+from selenium.webdriver.support.ui import Select
 
 try:
     import undetected_chromedriver as uc
@@ -95,7 +97,7 @@ class SeleniumWrapper():
 
         logger.debug(f"Using options {self.config}")
 
-        self.wait = config["wait"]
+        self.wait = self.config["wait"]
         self.windows = [] # [ [window_handler, url], [window_handler, url], ...]
         self.wait_ec = None
         self.wait_ec_params = config["wait_ec"]
@@ -108,7 +110,7 @@ class SeleniumWrapper():
                 del fake_ua_config["browser"]
                 self.ua = getattr(UserAgent(**fake_ua_config), fake_ua_browser)
 
-        logger.info(f"{self.__class__.__name__}: driver={self.browser}")
+        #logger.info(f"{self.__class__.__name__}: driver={self.browser}")
 
     def __build_chrome_options(self) -> webdriver.ChromeOptions:
         # user-agent
@@ -522,4 +524,43 @@ class SeleniumWrapper():
             return True
         else:
             return False
+
+    def execute_script(self, script:str, *args):
+        self.driver.execute_script(script, *args)
+
+    def _select_func(self,
+                     element: WebElement|Select,
+                     func: str,
+                     log_missing: bool = False,
+                     *args):
+        try:
+            s = element if isinstance(element, Select) else Select(element)
+            func = getattr(s, func)
+            if func:
+                return getattr(s, func)(*args)
+        except NoSuchElementException as te:
+            if log_missing:
+                logger.warning(f"func={func} ' not found")
+            return None
+
+    def select_by_visible_text(self, element: WebElement|Select, text:str, log_missing: bool = False):
+        return self._select_func(element, "select_by_visible_text", log_missing, text)
+
+    def select_by_index(self, element: WebElement | Select, index: int, log_missing: bool = False):
+        return self._select_func(element, "select_by_index", log_missing, index)
+
+    def select_by_value(self, element: WebElement | Select, value: str, log_missing: bool = False):
+        return self._select_func(element, "select_by_value", log_missing, value)
+
+    def deselect_all(self, element: WebElement | Select, log_missing: bool = False):
+        return self._select_func(element, "deselect_all", log_missing)
+
+    def deselect_by_index(self, element: WebElement | Select, index: int, log_missing: bool = False):
+        return self._select_func(element, "deselect_by_index", log_missing, index)
+
+    def deselect_by_value(self, element: WebElement | Select, value: str, log_missing: bool = False):
+        return self._select_func(element, "deselect_by_value", log_missing, value)
+
+    def deselect_by_visible_text(self, element: WebElement | Select, text: str, log_missing: bool = False):
+        return self._select_func(element, "deselect_by_visible_text", log_missing, text)
 
