@@ -1,5 +1,5 @@
 __name__ ='base_scraper'
-__version__ = '1.0.0'
+__version__ = '1.0.1'
 __date__ = '2024-06-18'
 __author__ = 'ktxo'
 __author_email__ = 'ktxotec@gmail.com'

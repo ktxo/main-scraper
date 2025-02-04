@@ -537,7 +537,9 @@ class SeleniumWrapper():
             s = element if isinstance(element, Select) else Select(element)
             func = getattr(s, func)
             if func:
-                return getattr(s, func)(*args)
+                func(*args)
+                return True
+            return None
         except NoSuchElementException as te:
             if log_missing:
                 logger.warning(f"func={func} ' not found")
