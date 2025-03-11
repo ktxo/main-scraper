@@ -8,6 +8,7 @@ import json
 import logging
 import os
 import random
+import shutil
 import sys
 import time
 
@@ -75,7 +76,7 @@ class SeleniumWrapper():
 
     }
 
-    def __init__(self, config:Dict|str=None, wait=[1,5], exe_path=None):
+    def __init__(self, config:Dict|str=None, wait=[1,5], exe_path=None, delete_before:bool = True):
         self.driver=None
         self.options:webdriver.ChromeOptions = None
         if isinstance(config, str):
@@ -90,6 +91,34 @@ class SeleniumWrapper():
             raise Exception(f"Unknown browser configuration '{self.browser}'")
 
         self.config = copy.deepcopy(config.get(self.browser))
+        download_dir = None
+        try:
+            download_dir = (config
+                            .get(config["browser"])
+                            .get("experimental_option")
+                            .get("prefs")
+                            .get("download.default_directory"))
+        except:
+            pass
+        # Delete before
+        if delete_before:
+            if config["browser"] == "uc":
+                user_dir = config.get("uc").get("config").get("user_data_dir")
+                shutil.rmtree(user_dir, ignore_errors=True)
+                # --user-data-dir
+                user_dir = [o[16:] for o in config.get("chrome").get("chrome_options", []) if o.startswith("--user-data-dir")]
+            else:
+                user_dir = [o[16:] for o in config.get("chrome").get("chrome_options", []) if o.startswith("--user-data-dir")]
+            if user_dir:
+                shutil.rmtree(user_dir[0], ignore_errors=True)
+            if download_dir:
+                shutil.rmtree(download_dir, ignore_errors=True)
+        if download_dir:
+            try:
+                os.makedirs(download_dir, exist_ok=True)
+            except Exception as e:
+                logger.warning(f"Cannot create dir download.default_directory={download_dir}. ({str(e)})")
+
         if isinstance(wait, int):
             self.config["wait"] = [0,wait]
         elif isinstance(wait, list):
@@ -129,7 +158,7 @@ class SeleniumWrapper():
             self.options.add_experimental_option(o, v)
         return self.options
 
-    def __build_uc_chrome_options(self) -> uc.ChromeOptions:
+    def __build_uc_chrome_options(self):
         # user-agent
         self.options = uc.ChromeOptions()
         if self.config.get("chrome_options", []):
@@ -202,7 +231,7 @@ class SeleniumWrapper():
         return self
 
     def minimize(self):
-        s.driver.minimize_window()
+        self.driver.minimize_window()
         return self
 
     def sleep(self, t: float|int|list[int] = None):
@@ -566,3 +595,22 @@ class SeleniumWrapper():
     def deselect_by_visible_text(self, element: WebElement | Select, text: str, log_missing: bool = False):
         return self._select_func(element, "deselect_by_visible_text", log_missing, text)
 
+    def send_text(self,
+                  selector: str,
+                  selector_value: str,
+                  text: str = "",
+                  clear_before: bool = False,
+                  element: WebElement = None,
+                  wait: WebDriverWait = None,
+                  log_missing: bool = False):
+        if wait:
+            e = self.wait_4_element_to_be_clickable(selector, selector_value, wait, log_missing)
+        else:
+            e = self.find_element(selector, selector_value, element=element, default=None, log_missing=log_missing)
+        if e:
+            if clear_before:
+                e.clear()
+            e.send_keys(text)
+            return True
+        else:
+            return False
