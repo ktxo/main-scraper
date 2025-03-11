@@ -14,19 +14,17 @@ Support of [chromedriver](https://chromedriver.chromium.org/downloads) or [undet
 ----
 
 ## How to use it?
-
-1. Download chromedriver (optional)
-2. Install requirements:
-    ```
-   pip install -r requirements.txt
-   ```
+1. Install from [PyPI - base-scraper](https://pypi.org/project/base-scraper/)
+2. Download chromedriver (optional)
 3. Configure [config.json](config.json)
 4. Build your app, see [sample.py](sample.py)
    This sample script requires [tabulate](https://pypi.org/project/tabulate/), run `pip install tabulate` to install it.
-
 
 ![](demo.gif)
 
 **~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~**
 
 Any feedback is welcome
+
+## TODO
+- Review package in PyPI
